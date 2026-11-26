@@ -1,8 +1,8 @@
-# 复制到 awesome-dsh-plugin 仓库：data/plugins/<你的GitHub用户名>__dsh-keykeeper.yml
+# 复制到 awesome-dsh-plugin 仓库：data/plugins/loveeveryone-Mr-niu__dsh-keykeeper.yml
 # 文件名必须与 url 的 slug 一致；只加这一个文件，不要改 README（README 由脚本生成）。
-# 把 <owner> 换成你的 GitHub 用户名或组织名，两处都要换。
-url: https://github.com/<owner>/dsh-keykeeper
-name: <owner>/dsh-keykeeper
+# 下方 url / name 已填好本项目所属账号 loveeveryone-Mr-niu。
+url: https://github.com/loveeveryone-Mr-niu/dsh-keykeeper
+name: loveeveryone-Mr-niu/dsh-keykeeper
 category: usage
 description:
   en: 'Encrypted local vault for model API keys: import keys.txt, check provider balances and subscription quotas, write providers into DSH with one click, and open official top-up pages.'
