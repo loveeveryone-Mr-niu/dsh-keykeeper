@@ -1,0 +1,40 @@
+{
+  "name": "dsh-keykeeper",
+  "version": "0.4.1",
+  "private": true,
+  "type": "module",
+  "description": "加密钥匙管家：本地保存各平台 API Key，查看余额/订阅额度，一键写入 DSH 模型配置，一键跳转官方充值。",
+  "license": "MIT",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "docs",
+    "icon.svg",
+    "test",
+    "scripts"
+  ],
+  "scripts": {
+    "test": "node test/host.test.mjs && node test/client.test.mjs"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-conversation",
+        "@deepseek-ai/dsh-client-ui-settings-models"
+      ]
+    }
+  }
+}

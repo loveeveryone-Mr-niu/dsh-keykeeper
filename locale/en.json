@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Key Keeper",
+    "description": "Stores provider API keys in an encrypted local vault, shows balances and subscription entry points, writes routes into DSH model settings, and opens official top-up pages."
+  }
+}
