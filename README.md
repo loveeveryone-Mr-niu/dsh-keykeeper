@@ -25,12 +25,14 @@ DSH 的本地钥匙保险库：集中保存各家模型 API Key、加密落盘�
 
 ## 安装与更新
 
-已安装。需要重装或换机器时：
+已安装。需要重装、换机器或从 GitHub 安装时：
 
-1. GUI：设置 → 插件 → 安装本地 bundle → 选择 `E:\deepseek研究成果\dsh-api管理器-11.26`。
-2. 或命令行：双击 `scripts\install.cmd`（内部用 `powershell -ExecutionPolicy Bypass` 调 `install.ps1`；直接运行 `.ps1` 会被系统的执行策略拦住）。
+- **GitHub 仓库**：<https://github.com/loveeveryone-Mr-niu/dsh-keykeeper>（公开；`main` 分支，版本以 tag 标出）
+- 本机重装：GUI 设置 → 插件 → 安装 → 选择 `E:\deepseek研究成果\dsh-api管理器-11.26`；或双击 `scripts\install.cmd`（内部用 `powershell -ExecutionPolicy Bypass` 调 `install.ps1`；直接运行 `.ps1` 会被系统的执行策略拦住）。
+- 换机器 / 新机器安装：GUI 设置 → 插件 → 安装，填 `git@github.com:loveeveryone-Mr-niu/dsh-keykeeper.git`（本机网络连不上 `https://github.com`，必须用这个 SSH 地址；新机器需先把它的公钥加到 GitHub 账号）。
+- 不会命令行：仓库页 → `Code` → `Download ZIP`，解压后在本机插件页选该目录安装。
 
-更新流程：改源码 → 跑 `test\host.test.mjs` 与 `test\client.test.mjs` → `node --check index.js`、`node --check client.js` → 在插件页禁用再启用（Host 端热重载）→ 浏览器 `Ctrl+R`（Client 端）。
+更新流程：`git pull` → 跑 `test\host.test.mjs` 与 `test\client.test.mjs` → 在插件页禁用再启用（Host 端热重载）→ 浏览器 `Ctrl+R`（Client 端）。改源码时另需 `node --check index.js`、`node --check client.js`。
 
 安装器实测：`scripts\install.cmd -Profile desktop` 走通（pnpm 输出 `Packages: -12` 属正常去重），profile 依赖与 `node_modules\dsh-keykeeper` 链接保持完好。
 

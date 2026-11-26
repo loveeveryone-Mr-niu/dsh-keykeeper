@@ -6,11 +6,11 @@
 
 - 版本 **0.4.1**；以 `link:` 方式装在 profile `desktop`（`dsh.profile.bundles` 含 `dsh-keykeeper`，依赖指向本目录），源码即运行代码。
 - 测试基线：Host **52 项**、Client **14 项**，全过；`node --check index.js client.js` 通过。
-- 最近一轮改动：⓪ 2026-11-26 目录改名（`api管理器-试做` → `dsh-api管理器-11.26`）致 profile 的 `link:` 失效、插件整页消失；已 `remove_bundle` + `install_bundle` 重装到新路径，保险库数据未动。① 保存 Key 后自动探测真实模型（`/provider/detect`）并写入路由，新增「测试对话」「设为默认」；② 硅基流动余额接口下线，移除适配器（改为无余额接口），补 StepFun 余额；③ 自动锁可配（0/5/15/30/60/240 分钟，默认 15），锁定页只读显示余额；④ 修复 3 个平台的控制台/充值链接（见「链接目录维护」）。
+- 最近一轮改动：⓪ 2026-11-26 目录改名（`api管理器-试做` → `dsh-api管理器-11.26`）致 profile 的 `link:` 失效、插件整页消失；已 `remove_bundle` + `install_bundle` 重装到新路径，保险库数据未动。① 保存 Key 后自动探测真实模型（`/provider/detect`）并写入路由，新增「测试对话」「设为默认」；② 硅基流动余额接口下线，移除适配器（改为无余额接口），补 StepFun 余额；③ 自动锁可配（0/5/15/30/60/240 分钟，默认 15），锁定页只读显示余额；④ 修复 3 个平台的控制台/充值链接（见「链接目录维护」）；⑤ 2026-11-26 首次发布到 GitHub（`loveeveryone-Mr-niu/dsh-keykeeper`，`main` + 标签 `v0.4.1`），并解决本机 `https://github.com` 不通的问题（改走 SSH 443 通道，见「发布与上传（GitHub）」）。
 - 运行态证据：`$DSH_HOME/keykeeper/last-mount.json` 应显示 `version` 与当前 `package.json` 一致；当前为 `0.4.1`，2026-11-26 14:45 重装后 desktop host pid 6300。
-- 文档：`README.md`（概览）、`docs/使用说明.md`（用户全文）、`docs/marketplace-entry.yml`（市场投稿模板，`<owner>` 待填）。
-- 仓库：本目录已 `git init`，全部文件已 `git add`、**未 commit**（本机无 git 身份）。
-- 未完成：插件市场 PR（需公开 GitHub 仓库满 1 天、`dsh-plugin` topic、填 owner）；模型列表 UI 编辑；低余额提醒。
+- 文档：`README.md`（概览）、`docs/使用说明.md`（用户全文）、`docs/marketplace-entry.yml`（市场投稿条目，`<owner>` 已填为 `loveeveryone-Mr-niu`）。
+- 仓库：已推送到 GitHub `loveeveryone-Mr-niu/dsh-keykeeper`（公开），`main` 分支 + 标签 `v0.4.1`；remote `origin` 为 **SSH 形式**（本机 HTTPS 被网络拦截）。发布/更新流程见「发布与上传（GitHub）」一节。
+- 未完成：`dsh-plugin` topic 与 Release 标签待用户在网页点（agent 无写权限）；插件市场 PR（需仓库满 1 天）；模型列表 UI 编辑；低余额提醒。
 
 ## 仓库结构
 
@@ -139,11 +139,108 @@ req.method = 'POST'; req.headers = { host: '127.0.0.1:65193', 'x-keykeeper': '1'
 ## 版本与发布
 
 - 语义化版本写在 `package.json`；用户可见行为变化至少 bump minor。当前 **0.4.1**。
+- **推送到 GitHub 的完整流程（测试 → 四处改版本号 → commit → tag → push → API 验收）见下一节「发布与上传（GitHub）」，照抄即可。**
 - 发布前更新 README 的「已知问题」与 AGENTS 的「待办」。
 - 安装：GUI 插件页选择本目录，或 `scripts\install.cmd`（封装 `powershell -ExecutionPolicy Bypass -File scripts\install.ps1`，绕过系统脚本执行策略；直接跑 .ps1 会被拦）；以 `link:` 方式安装意味着源码即运行代码。
 - 热更新：Host 端改完 `index.js` 后 `plugin_manager set_plugin(include:keykeeper, enabled:false→true)`，运行中的 DSH 会重新 import 本目录代码（实测 `$DSH_HOME/keykeeper/last-mount.json` 的 pid 仍是 desktop host 10168、时间戳/版本更新）。**只改 `package.json` 不会触发重新 import**（模块被缓存，`PKG` 在 import 时读取）——所以每轮改动都要动一下 `index.js`（哪怕只是 build 注释）。Client 端改动需浏览器 `Ctrl+R`。
 - 写文件一律用无 BOM UTF-8：`Set-Content -Encoding UTF8` 在 PS 5.1 会写 BOM，DSH 的 bundle 清单用 `JSON.parse` 读，会直接失败（症状见「常见故障」）。`write`/`edit` 工具写出的文件无 BOM，可放心用。
 - 挂载戳：`last-mount.json` 由 `apply()` 写入（时间/pid/版本），用于验证「运行的是不是最新代码」。
+
+## 发布与上传（GitHub）
+
+目标：任何 agent 改完代码后，照这一节执行就能把新版本推上 GitHub，用户侧也能一句命令更新；不需要再问人在哪、用哪个地址。
+
+### 一、仓库坐标（硬编码，别猜）
+
+- 账号 / 仓库：`loveeveryone-Mr-niu/dsh-keykeeper`（公开）
+- 网页：https://github.com/loveeveryone-Mr-niu/dsh-keykeeper
+- remote：`origin` = `git@github.com:loveeveryone-Mr-niu/dsh-keykeeper.git` —— **必须是 SSH 形式，不要改成 HTTPS**
+- 分支：`main`（唯一长期分支，不开 dev 分支）
+- 标签：`v<package.json 的 version>`，一个版本一个标签（已有 `v0.4.1`）
+- 提交身份（仓库内已配，不要用 `--global` 覆盖）：`user.name=loveeveryone-Mr-niu`、`user.email=loveeveryone-Mr-niu@users.noreply.github.com`（邮箱用 GitHub 隐私地址，不暴露真实邮箱）
+
+### 二、网络约束（本机最大的坑，先看再动手）
+
+| 目标 | 通不通 | 说明 |
+| --- | --- | --- |
+| `https://github.com` | ❌ 不通 | TLS 阶段超时 / `Recv failure: Connection was reset`（网络干扰）。**任何 HTTPS 的 git push/clone 都必然失败** |
+| `https://api.github.com` | ✅ 通 | 只读校验用（列提交、列文件、查标签、查仓库状态），无需令牌 |
+| `ssh.github.com:443` | ✅ 通 | 推送/拉取走这条 |
+
+- 已写 `C:\Users\Administrator\.ssh\config`：`Host github.com` → `HostName ssh.github.com`、`Port 443`、`User git`、`IdentityFile ~/.ssh/id_ed25519`、`IdentitiesOnly yes`。所以 `git@github.com:...` 实际连的是 443 端口，**不要删这段配置**。
+- 本机公钥（`~/.ssh/id_ed25519.pub`，注释 `loveeveryone-Mr-niu@github`）已登记在该 GitHub 账号。自检：`ssh -T git@github.com` 应输出 `Hi loveeveryone-Mr-niu! You've successfully authenticated, but GitHub does not provide shell access.` —— **退出码是 1，属正常**，别当失败。
+- 换电脑 / 重装系统后：`ssh-keygen -t ed25519 -C "新机器"` → 把 `.pub` 加到 GitHub → Settings → SSH and GPG keys → 在新机器上照抄上面那段 `~/.ssh/config`。同一账号可挂多把公钥。
+- 非必要不要碰凭据助手：`credential.helper` 目前指向 `C:/Program Files/Git/ucrt64/bin/git-credential-manager.exe`（Git for Windows 自带，不在 PATH 上），只对 HTTPS 有意义，而 HTTPS 根本连不上。
+
+### 三、一次标准发布（照抄命令）
+
+第 0 步：基线测试必须全过，否则不要发。
+
+```powershell
+$d = 'E:\deepseek研究成果\dsh-api管理器-11.26'
+$env:ELECTRON_RUN_AS_NODE='1'
+$exe = 'C:\Users\Administrator\AppData\Local\Programs\DeepSeek Harness\DeepSeek Harness.exe'
+& $exe "$d\test\host.test.mjs"      # 基线 52 项全过
+& $exe "$d\test\client.test.mjs"    # 基线 14 项全过
+```
+
+第 1 步：改代码，`node --check index.js` / `node --check client.js` 也要过。
+
+第 2 步：bump 版本号，**四处一起改**（漏一处就出现"版本对不上"的排错死路）：
+
+1. `package.json` 第 3 行 `"version"`
+2. `README.md` 第 6 行「版本：x.y.z」
+3. `docs/使用说明.md` 第 3 行「版本 x.y.z」
+4. 本文件「当前状态」小节
+
+第 3 步：把本文件「待办 / 路线图」里已完成的项打勾，并更新「最近一轮改动」。
+
+第 4 步：提交 + 推送 + 打标签：
+
+```powershell
+git -C $d add -A
+git -C $d commit -m "feat: 一句话说明（中文即可）"
+git -C $d push origin main
+git -C $d tag -a "v0.4.2" -m "钥匙管家 v0.4.2"   # 与 package.json 版本一致
+git -C $d push origin "v0.4.2"
+```
+
+第 5 步：用只读 API 验收（**没有验证就不要说"已上传"**）：
+
+```powershell
+curl.exe -sS https://api.github.com/repos/loveeveryone-Mr-niu/dsh-keykeeper/commits?per_page=1
+curl.exe -sS https://api.github.com/repos/loveeveryone-Mr-niu/dsh-keykeeper/tags
+curl.exe -sS https://api.github.com/repos/loveeveryone-Mr-niu/dsh-keykeeper/contents
+```
+
+三项分别要能看到刚推的 sha / 新标签 / 新文件。也可用 `git -C $d ls-remote origin` 看远端引用。
+
+第 6 步：Release（可选）：需要网页或 GitHub PAT；SSH 密钥不能做写操作。**不要向用户索要 token**，直接让用户在网页点：Releases → Draft a new release → 选刚推的标签 → 发布。
+
+### 四、用户侧"更新到最新"怎么做
+
+- **本机（以 `link:` 安装、源码即运行）**：
+  ```powershell
+  git -C 'E:\deepseek研究成果\dsh-api管理器-11.26' pull
+  ```
+  然后 toggle 插件禁用→启用（`plugin_manager set_plugin(include:keykeeper, enabled:false→true)`）让 Host 重新 import（**只改 `package.json` 不会触发重新 import**，见「版本与发布」），浏览器 `Ctrl+R` 刷新 Client。
+- **别的电脑**：DSH → 设置 → 插件 → 安装，填 `git@github.com:loveeveryone-Mr-niu/dsh-keykeeper.git`（**别填 `https://github.com/...`**，对端网络可能同样被拦）。装成 git 克隆后同样用 `git pull` 更新，插件数据仍在 `$DSH_HOME/keykeeper/`，pull 不会动它。
+- 完全不会命令行的人：网页仓库 → `Code` → `Download ZIP`，解压后在本机插件页选该目录安装。
+
+### 五、禁止事项
+
+- 不要把 `$DSH_HOME/keykeeper/vault.json`、`balance-cache.json` 拷进仓库、贴进 issue/PR 或写进提交信息——里面是用户的 API Key 密文与平台清单。
+- 不要 `git push --force`（`main` 是唯一分支，force 会抹历史）。
+- 不要提交 `node_modules/`（已在 `.gitignore`）；不要写带 BOM 的文件（bundle 清单 `JSON.parse` 会直接崩，见「常见故障」）。
+- 不要为了"绕过网络"把 remote 改成 HTTPS，也不要加 `http.proxy` 瞎试——本机没有可用代理（`ProxyEnable=0`，7890/10809 均无监听）。
+
+### 六、插件市场投稿（与日常发布是两件事）
+
+前提：仓库公开满 1 天、仓库主页 About 里已加 `dsh-plugin` topic。之后：
+
+1. `docs/marketplace-entry.yml`（`<owner>` 已填好）复制为 `data/plugins/loveeveryone-Mr-niu__dsh-keykeeper.yml`；
+2. fork `awesome-dsh-plugin/awesome-dsh-plugin` → **只加这一个文件**（README 由脚本生成，手改会被 CI 打回）→ 提 PR；
+3. 合并后插件市场里才搜得到；后续每次发版不必重新提 PR（条目指向仓库，版本靠 tag 更新）。
 
 ## 待办 / 路线图
 
@@ -154,6 +251,6 @@ req.method = 'POST'; req.headers = { host: '127.0.0.1:65193', 'x-keykeeper': '1'
 - [x] locale 接入与英文文案（meta.title/description 已补，UI 文案仍中文）
 - [x] KDF 升级（N=65536，旧库解锁自动迁移；密码仍≥6 位，建议≥10）
 - [ ] 安装脚本自动检测 `dsh` CLI 路径
-- [ ] 插件市场投稿：建公开 GitHub 仓库（满 1 天）→ 加 `dsh-plugin` topic → 填 `docs/marketplace-entry.yml` 的 `<owner>` → 向 `awesome-dsh-plugin/awesome-dsh-plugin` 提 PR（只加 `data/plugins/<owner>__dsh-keykeeper.yml`）
+- [ ] 插件市场投稿：仓库已建并推送（2026-11-26）→ 待加 `dsh-plugin` topic → 待建 `v0.4.1` Release → 满 1 天后向 `awesome-dsh-plugin/awesome-dsh-plugin` 提 PR（只加 `data/plugins/loveeveryone-Mr-niu__dsh-keykeeper.yml`，条目已填好）
 - [ ] 逐家核对 13 个 403/超时链接（需要用户在有代理的本机点开确认）
 - [ ] 可选：页面内编辑充值链接（vault.ui.rechargeOverrides 已存在，缺 UI）
